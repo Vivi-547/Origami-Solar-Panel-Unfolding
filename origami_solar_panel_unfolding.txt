@@ -1,0 +1,74 @@
+
+#include <Servo.h>
+
+// Parameters for origami geometry
+const int numSides = 6;  // Number of sides for folded polygon
+const float unfoldAngle = 180.0 / numSides;  // Angle per side when unfolding
+
+// Servo motor pins
+const int servoPin1 = 9;
+const int servoPin2 = 10;
+
+// Servo objects
+Servo servo1;
+Servo servo2;
+
+// Folding/unfolding states
+bool isUnfolded = false;
+
+void setup() {
+  // Attach servos to pins
+  servo1.attach(servoPin1);
+  servo2.attach(servoPin2);
+
+  // Initialize serial communication
+  Serial.begin(9600);
+  Serial.println("Origami Solar Panel Controller Initialized.");
+
+  // Set initial positions
+  servo1.write(0);  // Fully folded
+  servo2.write(0);  // Fully folded
+}
+
+void loop() {
+  // Check for serial commands to open or close the panel
+  if (Serial.available() > 0) {
+    char command = Serial.read();
+
+    if (command == 'O' || command == 'o') {
+      unfoldSolarPanel();
+    } else if (command == 'C' || command == 'c') {
+      foldSolarPanel();
+    }
+  }
+
+  delay(100);  // Small delay for stability
+}
+
+void unfoldSolarPanel() {
+  if (!isUnfolded) {
+    Serial.println("Unfolding Solar Panel...");
+    for (int angle = 0; angle <= 180; angle += unfoldAngle) {
+      servo1.write(angle);
+      servo2.write(angle);
+      delay(500);  // Delay to simulate unfolding motion
+    }
+    isUnfolded = true;
+  } else {
+    Serial.println("Solar Panel is already unfolded.");
+  }
+}
+
+void foldSolarPanel() {
+  if (isUnfolded) {
+    Serial.println("Folding Solar Panel...");
+    for (int angle = 180; angle >= 0; angle -= unfoldAngle) {
+      servo1.write(angle);
+      servo2.write(angle);
+      delay(500);  // Delay to simulate folding motion
+    }
+    isUnfolded = false;
+  } else {
+    Serial.println("Solar Panel is already folded.");
+  }
+}
